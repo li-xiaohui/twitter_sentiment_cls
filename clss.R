@@ -78,12 +78,15 @@ glmnet_classifier <- cv.glmnet(x = dtm_train_tfidf, y = tweets_train[['sentiment
                                # again lower number of iterations for faster training
                                maxit = 1e3)
 print(difftime(Sys.time(), t1, units = 'mins'))
+# Time difference of 46.17742 mins
 
 plot(glmnet_classifier)
 print(paste("max AUC =", round(max(glmnet_classifier$cvm), 4)))
+# [1] "max AUC = 0.8767" 
 
 preds <- predict(glmnet_classifier, dtm_test_tfidf, type = 'response')[ ,1]
 glmnet:::auc(as.numeric(tweets_test$sentiment), preds)
+# [1] 0.8754919
 
 # save the model for future using
 saveRDS(glmnet_classifier, 'glmnet_classifier.RDS')
@@ -99,9 +102,13 @@ setup_twitter_oauth('0iMpL93VxqVBe9stky6jjegVT', # api key
                     'EOrYGcRbwjHvajRlu0CYMPkFBJVX32U9GzeFkjJrVEjsw' # access token secret
 )
 
-df_tweets <- twListToDF(searchTwitter('Standard Chartered OR #StanChart', n = 1000, lang = 'en')) %>%
-  # converting some symbols
+# df_tweets <- twListToDF(searchTwitter('Standard Chartered OR #StanChart', since = '2017-10-01', until = '2017-12-31', lang = 'en')) %>%
+df_tweets <- twListToDF(searchTwitter('Standard Chartered OR #StanChart OR @StanChart', n = 10000, lang = 'en')) %>%
+#   # converting some symbols
   dmap_at('text', conv_fun)
+
+#save to file
+write.csv(df_tweets, file='tweets2.7k.csv', row.names = F)
 
 # preprocessing and tokenization
 it_tweets <- itoken(df_tweets$text,
